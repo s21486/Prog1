@@ -1,18 +1,19 @@
 ﻿//autor: Błażej Bałęczny @PJATK 2019
 
-/* Program tworzy tabelę o ilości rzędów i kolumn podanych przez użytkownika,
- * następnie wypełnia ją losowymi liczbai naturalnymi z zakresu 1-25. Po wygene-
- * rowaniu tabeli, liczy najkrótszą ścieżkę pomiędzy dowolną komórką pierwszej
- * kolumny, a dowolną komórką ostatniej kolumny, gdzie symboliczna odległość 
- * pomiędzy komórkami jest wyznaczona przez liczbę w komórce, która jest
- * komórką docelową danego przejścia. Przejście jest możliwe wyłącznie pomiędzy
- * sąsiadującymi komórkami. Za sąsiadujące komórki uznaje się takie, które leżą
- * w sąsiadujących kolumnach w tym samym wierszu ("obok") lub w wierszu o 
- * indeksie o jeden większym i mniejszym ("na ukos"). Punktem początkowym jest
- * abstrakcyjny punkt o wartości 0, który leży na lewo od pierwszej kolumny i 
- * sąsiaduje ze wszystkimi komórkami tejże. Po wyliczeniu wartości najkrótszej
- * trasy, program wyświetla sumę odległości wszystkich kroków oraz ich 
- * poszczególne wartości w kolejności, w jakiej przeszedł je program.
+/* Program tworzy tabelę o ilości wierszy i kolumn podanych przez użytkownika,
+ * następnie wypełnia ją losowymi liczbami naturalnymi z zakresu 1-25. 
+ * Po wygenerowaniu tabeli, liczy najkrótszą ścieżkę pomiędzy dowolną komórką
+ * pierwszej kolumny, a dowolną komórką ostatniej kolumny, gdzie symboliczna 
+ * odległość pomiędzy komórkami jest wyznaczona przez liczbę w komórce, która
+ * jest komórką docelową danego przejścia. Przejście jest możliwe wyłącznie
+ * pomiędzy sąsiadującymi komórkami. Za sąsiadujące komórki uznaje się takie,
+ * które leżą w sąsiadujących kolumnach w tym samym wierszu ("obok") lub 
+ * w wierszu o indeksie o jeden większym i mniejszym ("na ukos"). Punktem 
+ * początkowym jest abstrakcyjny punkt o wartości 0, który leży na lewo od
+ * pierwszej kolumny i sąsiaduje ze wszystkimi komórkami tejże. Po wyliczeniu
+ * wartości najkrótszej trasy, program wyświetla sumę odległości wszystkich 
+ * kroków oraz ich poszczególne wartości w kolejności, w jakiej przeszedł je
+ * program.
  */
                                                                                 
 
@@ -20,6 +21,7 @@
 #include <time.h>
 #include <vector>
 #include <numeric>
+#include <algorithm>
 
 /* Funkcja makeArray() tworzy i zwraca dwuwymiarową tabelę, którą zapełniła 
  * liczbami naturalnymi z zakresu 1-25.
@@ -35,7 +37,7 @@ std::vector<std::vector<int>> makeArray(int rows, int columns) {
 
 	for (int row = 0; row < rows; row++) {
 		
-		// vector będący rzędem tabeli w jej graficznym przedstawieniu
+		// vector będący wierszem tabeli w jej graficznym przedstawieniu
 		std::vector<int> rowVector; 
 		
 		for (int column = 0; column < columns; column++) {
@@ -52,7 +54,7 @@ std::vector<std::vector<int>> makeArray(int rows, int columns) {
  */
 
 void drawArray(std::vector<std::vector<int>> numbers) {
-
+	
 	std::cout << "TABELA: \n";
 
 	for (std::vector<int> row : numbers) {
@@ -68,7 +70,6 @@ void drawArray(std::vector<std::vector<int>> numbers) {
 /* Funkcja obliczajaca najkrótszą drogę od pierwszej do ostatniej kolumny dla
  * danej tabeli.
  */
-
 std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 
 	/* Vector cost (w graficznym przedstawieniu tabela liczb) zawiera odległości
@@ -85,101 +86,126 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 	 * zapełniane pustymi vectorami liczb.
 	 */
 	for (int row = 0; row < numbers.size(); row++) {
+		
+		// Lokalna zmienna będąca wierszem tabeli cost
 		std::vector<std::vector<int>> outerVector;
+
 		for (int column = 0; column < numbers[row].size(); column++) {
+
+			// Lokalna zmienna będąca komórką tabeli cost
 			std::vector<int> innerVector;
 
 			if (column == 0) innerVector.push_back(numbers[row][column]);
-
-			//dla pozostalych kolumn jest to pusty vector
 			outerVector.push_back(innerVector);
 		}
 		cost.push_back(outerVector);
 	}
 
-	int a; //glowna funkcjonalnosc polega na sprawdzaniu sum kosztow krokow, lezacych po lewej stronie od sprawdzanego
-	int b; //miejsca w tabeli. Funkcja sprawdza trzy miejsca lezace po lewej stronie w przypadku elementow ze srodka kolumny, dwa w przypadku
-	int c; //pierwszego i ostatniego miejsca w tabeli. Zostana one zapisane do zmiennych po lewej.
-	int indexA = -1;
-	int indexB = 0;
-	int indexC = 1;
-	int index;
+	// Zmienna przechowująca deltę indeksu komórki "na ukos w górę"
+	int indexA{ -1 };
+	// Zmienna przechowująca deltę indeksu komórki "obok"
+	int indexB{ 0 };
+	// Zmienna przechowująca deltę indeksu komórki "na ukos w dół"
+	int indexC{ 1 };
 
-	//petla sprawdza i zapelnia po kolei kolumny tabeli cost, pomijajac pierwsza kolumne, ktora zostala juz zapleniona.
+	/* Pętla sprawdza i zapełnia po kolei kolumny tabeli cost, pomijając 
+	 * pierwszą kolumnę, która została już zapłeniona.
+	 */
 	for (int column = 1; column < cost[0].size(); column++) {
 		for (int row = 0; row < cost.size(); row++) {
-			if (row == 0) {  // jezeli rzad ma indeks 0 (pierwszy rzad od gory), to nie sprawdzamy indeksu -1
-				indexA = 0;
+			
+			// jeżeli wiersz jest pierwszy od góry, to nie sprawdzamy indeksu -1
+			if (row == 0) {  
+				indexA = 0 ;
 			}
-			else if (row == cost.size() - 1) {  // jezeli rzad ma ostatni indeks, to nie sprawdzamy wiersza po nim
+
+			// jeżeli wiersz jest ostatni, to nie sprawdzamy wiersza po nim
+			else if (row == cost.size() - 1) {  
 				indexC = 0;
 			}
 
-			// liczymy sumy kosztow dotarcia do trzech (badz dwoch) miejsc leacych w dostepnych komorkach po lewej stronie od komorki docelowej
-			a = std::accumulate(cost[row + indexA][column - 1].begin(), cost[row + indexA][column - 1].end(), 0);
-			b = std::accumulate(cost[row + indexB][column - 1].begin(), cost[row + indexB][column - 1].end(), 0);
-			c = std::accumulate(cost[row + indexC][column - 1].begin(), cost[row + indexC][column - 1].end(), 0);
+			/* Liczymy sumy kosztów dotarcia od komórek sąsiadujących z komórką
+			 * docelową od lewej strony.
+			 */
+			// Zmienna przechowująca sumę kosztów dotarcia z komórki z góry
+			int a{ std::accumulate(cost[row + indexA][column - 1].begin(),
+									cost[row + indexA][column - 1].end(), 0) 
+			};
+			// Zmienna przechowująca sumę kosztów dotarcia z komórki obok
+			int b{ std::accumulate(cost[row + indexB][column - 1].begin(),
+									cost[row + indexB][column - 1].end(), 0) 
+			};
+			// Zmienna przechowująca sumę kosztów dotarcia z komórki z dołu
+			int c{ std::accumulate(cost[row + indexC][column - 1].begin(),
+									cost[row + indexC][column - 1].end(), 0) 
+			};
 
-			//szukamy najmniejszej z policzonych sum i wskazujemy jej indeks wzgledem aktualnie sprawdzanej komorki
-			//wyobrazajac sobie tabele graficznie, indeks A=-1 bedzie na skos do gory po lewej, indeks B=0 bezposrednio po lewej
-			//zas indeks C=1 na skos w dol.
-			if (a <= b && a <= c) {
+			// Zmienna na najmniejszą sumę kosztów dotarcia do komórki
+			int smallest{ std::min(a, std::min(b, c)) };
+
+			// Szukamy najmniejszej z policzonych sum i wskazujemy jej indeks.
+			int index; // Zmienna na deltę indeksu komórki o najniższej sumie
+			if (smallest == a) {
 				index = indexA;
 			}
-			else if (b <= a && b <= c) {
+			else if (smallest == b) {
 				index = indexB;
 			}
-			else if (c <= a && c <= b) {
+			else if (smallest == c) {
 				index = indexC;
 			}
 
-			//petla uzupelnia aktualnie sprawdzana komorke danymi z komorki lezacej po lewej stronie, do ktorej
-			//prowadzila najkrotsza droga dojscia
+			// Uzupełnamy komórkę kosztami najkrótszej drogi do niej prowadzącej
 			for (int number : cost[row + index][column - 1]) {
 				cost[row][column].push_back(number);
 			}
 			cost[row][column].push_back(numbers[row][column]);
 
-			indexA = -1; //przywracamy indeksy do domyslnych wartosci przed kolejnym krokiem petli
+			// Przywracamy wszystkie delty do domyślnych wartości
+			indexA = -1;
 			indexC = 1;
 		}
 	}
+	/* Zmienna na najniższą odkrytą drogę rozwiązania. Zainicjalizowana na
+	 * najwyższą możliwą wartość.
+	 */
+	unsigned long long low_sum{ 25 * cost[0].size() };
 
-	std::vector<int> result;
+	std::vector<int> func_result;
 
-	unsigned long long temp = 25 * cost[0].size(); //zmienna przechowuje maksymalna mozliwa droge dojscia.
-
-	//petla szuka najmniejszej sumy wartosci w ostatniej kolumnie, nastepnie przekazuje ja do zmiennej result
+	/* Pętla sprawdza po kolei komórki ostatniej kolumny i szuka takiej o
+	 * najniższej sumie wartości.
+	 */
 	for (int i = 0; i < cost.size(); i++) {
-		int vectorSum = std::accumulate(cost[i][cost[i].size() - 1].begin(), cost[i][cost[i].size() - 1].end(), 0);
-		if (vectorSum < temp) {
-			temp = vectorSum;
-			result = cost[i][cost[i].size() - 1];
+		int vectorSum{ std::accumulate(cost[i][cost[i].size() - 1].begin(),
+									   cost[i][cost[i].size() - 1].end(), 0)
+		};
+		if (vectorSum < low_sum) {
+			low_sum = vectorSum;
+			func_result = cost[i][cost[i].size() - 1];
 		}
 	}
-	return result;
+	return func_result;
 }
 
-//funkcja wywoluje najwazniejsze funkcje programu i odpowiada za kontakt z uzytkownikiem
+// Funkcja wywołuje najważniejsze funkcje programu i odpowiada za interfejs.
 void interface() {
 	int rows;
 	int columns;
-	//pobieramy dane wejsciowe
 	std::cout << "Podaj liczbe rzedow: ";
 	std::cin >> rows;
 	std::cout << "Podaj liczbe kolumn: ";
 	std::cin >> columns;
-	//tworzymy tabele na podstawie danych wejsciowych
 	std::vector<std::vector<int>> numbers = makeArray(rows, columns);
-	//wyswietlamy tablice dla uzytkownika
 	drawArray(numbers);
-	//liczymy wynik
 	std::vector<int> result = shortestPath(numbers);
-	//wyswietlamy wynik
+	
+	// Wyświetlamy wynik
 	for (int number : result) {
 		std::cout << number << ' ';
 	}
-	std::cout << "\nSUMA: " << std::accumulate(result.begin(), result.end(), 0) << '\n';
+	std::cout << "\nSUMA: " << std::accumulate(result.begin(), result.end(), 0) 
+			  << '\n';
 }
 
 
