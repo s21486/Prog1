@@ -23,10 +23,9 @@
 #include <numeric>
 #include <algorithm>
 
-/* Funkcja makeArray() tworzy i zwraca dwuwymiarową tabelę, którą zapełniła 
- * liczbami naturalnymi z zakresu 1-25.
+/* Funkcja tworząca i zwracająca dwuwymiarową tabelę, którą zapełniła liczbami
+ * naturalnymi z zakresu 1-25.
  */
-
 std::vector<std::vector<int>> makeArray(int rows, int columns) {
 	
 	/* Użycie vectorów jest podyktowane koniecznością dynamicznego przypisania
@@ -49,14 +48,9 @@ std::vector<std::vector<int>> makeArray(int rows, int columns) {
 	return numberMatrix;
 }
 
-/* Funkcja drawArray() wypisuje na ekran graficzne przedstawienie zawartości
- * tabeli.
- */
-
+// Funkcja wypisująca na ekran graficzne przedstawienie zawartości tabeli.
 void drawArray(std::vector<std::vector<int>> numbers) {
-	
 	std::cout << "TABELA: \n";
-
 	for (std::vector<int> row : numbers) {
 		for (int number : row) {
 			std::cout << number << '\t';
@@ -88,17 +82,17 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 	for (int row = 0; row < numbers.size(); row++) {
 		
 		// Lokalna zmienna będąca wierszem tabeli cost
-		std::vector<std::vector<int>> outerVector;
+		std::vector<std::vector<int>> rowVector;
 
 		for (int column = 0; column < numbers[row].size(); column++) {
 
 			// Lokalna zmienna będąca komórką tabeli cost
-			std::vector<int> innerVector;
+			std::vector<int> cellVector;
 
-			if (column == 0) innerVector.push_back(numbers[row][column]);
-			outerVector.push_back(innerVector);
+			if (column == 0) cellVector.push_back(numbers[row][column]);
+			rowVector.push_back(cellVector);
 		}
-		cost.push_back(outerVector);
+		cost.push_back(rowVector);
 	}
 
 	// Zmienna przechowująca deltę indeksu komórki "na ukos w górę"
@@ -144,14 +138,14 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 			int smallest{ std::min(a, std::min(b, c)) };
 
 			// Szukamy najmniejszej z policzonych sum i wskazujemy jej indeks.
-			int index; // Zmienna na deltę indeksu komórki o najniższej sumie
+			int index;
 			if (smallest == a) {
 				index = indexA;
 			}
 			else if (smallest == b) {
 				index = indexB;
 			}
-			else if (smallest == c) {
+			else {
 				index = indexC;
 			}
 
