@@ -12,8 +12,7 @@
  * początkowym jest abstrakcyjny punkt o wartości 0, który leży na lewo od
  * pierwszej kolumny i sąsiaduje ze wszystkimi komórkami tejże. Po wyliczeniu
  * wartości najkrótszej trasy, program wyświetla sumę odległości wszystkich 
- * kroków oraz ich poszczególne wartości w kolejności, w jakiej przeszedł je
- * program.
+ * kroków oraz jej składniki.
  */
                                                                                 
 
@@ -66,75 +65,69 @@ void drawArray(std::vector<std::vector<int>> numbers) {
  */
 std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 
-	/* Vector cost (w graficznym przedstawieniu tabela liczb) zawiera odległości
-	 * dojścia do wszystkich kroków pośrednich. Jest zbudowana analogicznie, do
+	/* Vector distance (w graficznym przedstawieniu tabela liczb) zawiera odległości
+	 * dojścia do wszystkich kroków pośrednich. Jest zbudowany analogicznie, do
 	 * tabeli wejściowej numbers, jednak każda komórka zawiera dodatkowo zestaw
 	 * odległości, przez które funkcja przeszła do tej pory, szukając 
 	 * najkrótszej ścieżki. 
 	 */
-	std::vector<std::vector<std::vector<int>>> cost;
+	std::vector<std::vector<std::vector<int>>> distance;
 
-	/* Poniższa pętla wypełnia vector cost danymi początkowymi. W graficznym
+	/* Poniższa pętla wypełnia vector distance danymi początkowymi. W graficznym
 	 * przedstawieniu, pierwsza kolumna jest zapełniana tymi samymi liczbami,
 	 * co pierwsza kolumna tabeli wejściowej numbers. Pozostałe kolumny są
 	 * zapełniane pustymi vectorami liczb.
 	 */
 	for (int row = 0; row < numbers.size(); row++) {
 		
-		// Lokalna zmienna będąca wierszem tabeli cost
-		std::vector<std::vector<int>> rowVector;
+		std::vector<std::vector<int>> rowVector; // Wiersz tabeli distance
 
 		for (int column = 0; column < numbers[row].size(); column++) {
 
-			// Lokalna zmienna będąca komórką tabeli cost
-			std::vector<int> cellVector;
+			std::vector<int> cellVector; // Komórka tabeli distance
 
 			if (column == 0) cellVector.push_back(numbers[row][column]);
 			rowVector.push_back(cellVector);
 		}
-		cost.push_back(rowVector);
+		distance.push_back(rowVector);
 	}
+	int indexA{ -1 }; // Delta indeksu komórki "na ukos w górę"	
+	int indexB{ 0 }; // Delta indeksu komórki "obok"
+	int indexC{ 1 }; // Delta indeksu komórki "na ukos w dół"
 
-	// Zmienna przechowująca deltę indeksu komórki "na ukos w górę"
-	int indexA{ -1 };
-	// Zmienna przechowująca deltę indeksu komórki "obok"
-	int indexB{ 0 };
-	// Zmienna przechowująca deltę indeksu komórki "na ukos w dół"
-	int indexC{ 1 };
-
-	/* Pętla sprawdza i zapełnia po kolei kolumny tabeli cost, pomijając 
+	/* Pętla sprawdza i zapełnia po kolei kolumny tabeli distance, pomijając 
 	 * pierwszą kolumnę, która została już zapłeniona.
 	 */
-	for (int column = 1; column < cost[0].size(); column++) {
-		for (int row = 0; row < cost.size(); row++) {
+	for (int column = 1; column < distance[0].size(); column++) {
+		for (int row = 0; row < distance.size(); row++) {
 			
-			// jeżeli wiersz jest pierwszy od góry, to nie sprawdzamy indeksu -1
+			// jeżeli wiersz jest pierwszy, to nie sprawdzamy wiersza powyżej
 			if (row == 0) {  
 				indexA = 0 ;
 			}
 
 			// jeżeli wiersz jest ostatni, to nie sprawdzamy wiersza po nim
-			else if (row == cost.size() - 1) {  
+			else if (row == distance.size() - 1) {  
 				indexC = 0;
 			}
 
-			/* Liczymy sumy kosztów dotarcia od komórek sąsiadujących z komórką
-			 * docelową od lewej strony.
+			/* Liczymy sumy odległości od komórek sąsiadujących z komórką
+			 * docelową z lewej strony.
 			 */
-			// Zmienna przechowująca sumę kosztów dotarcia z komórki z góry
-			int a{ std::accumulate(cost[row + indexA][column - 1].begin(),
-									cost[row + indexA][column - 1].end(), 0) 
+			// Zmienna przechowująca sumę odległości z komórki z góry
+			int a{ std::accumulate(distance[row + indexA][column - 1].begin(),
+								   distance[row + indexA][column - 1].end(), 0) 
 			};
-			// Zmienna przechowująca sumę kosztów dotarcia z komórki obok
-			int b{ std::accumulate(cost[row + indexB][column - 1].begin(),
-									cost[row + indexB][column - 1].end(), 0) 
+			// Zmienna przechowująca sumę odległości z komórki obok
+			int b{ std::accumulate(distance[row + indexB][column - 1].begin(),
+								   distance[row + indexB][column - 1].end(), 0) 
 			};
-			// Zmienna przechowująca sumę kosztów dotarcia z komórki z dołu
-			int c{ std::accumulate(cost[row + indexC][column - 1].begin(),
-									cost[row + indexC][column - 1].end(), 0) 
+			// Zmienna przechowująca sumę odległości z komórki z dołu
+			int c{ std::accumulate(distance[row + indexC][column - 1].begin(),
+								   distance[row + indexC][column - 1].end(), 0) 
 			};
 
-			// Zmienna na najmniejszą sumę kosztów dotarcia do komórki
+			// Zmienna na najmniejszą sumę odległości do komórki
 			int smallest{ std::min(a, std::min(b, c)) };
 
 			// Szukamy najmniejszej z policzonych sum i wskazujemy jej indeks.
@@ -149,34 +142,34 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 				index = indexC;
 			}
 
-			// Uzupełnamy komórkę kosztami najkrótszej drogi do niej prowadzącej
-			for (int number : cost[row + index][column - 1]) {
-				cost[row][column].push_back(number);
+			// Uzupełnamy komórkę najkrótszą drogą do niej prowadzącą
+			for (int number : distance[row + index][column - 1]) {
+				distance[row][column].push_back(number);
 			}
-			cost[row][column].push_back(numbers[row][column]);
+			distance[row][column].push_back(numbers[row][column]);
 
 			// Przywracamy wszystkie delty do domyślnych wartości
 			indexA = -1;
 			indexC = 1;
 		}
 	}
-	/* Zmienna na najniższą odkrytą drogę rozwiązania. Zainicjalizowana na
+	/* Zmienna na najkrótszą odkrytą drogę rozwiązania. Zainicjalizowana na
 	 * najwyższą możliwą wartość.
 	 */
-	unsigned long long low_sum{ 25 * cost[0].size() };
+	unsigned long long low_sum{ 25 * distance[0].size() };
 
 	std::vector<int> func_result;
 
 	/* Pętla sprawdza po kolei komórki ostatniej kolumny i szuka takiej o
 	 * najniższej sumie wartości.
 	 */
-	for (int i = 0; i < cost.size(); i++) {
-		int vectorSum{ std::accumulate(cost[i][cost[i].size() - 1].begin(),
-									   cost[i][cost[i].size() - 1].end(), 0)
+	for (int i = 0; i < distance.size(); i++) {
+		int vectorSum{ std::accumulate(distance[i][distance[i].size() - 1].begin(),
+									   distance[i][distance[i].size() - 1].end(), 0)
 		};
 		if (vectorSum < low_sum) {
 			low_sum = vectorSum;
-			func_result = cost[i][cost[i].size() - 1];
+			func_result = distance[i][distance[i].size() - 1];
 		}
 	}
 	return func_result;
