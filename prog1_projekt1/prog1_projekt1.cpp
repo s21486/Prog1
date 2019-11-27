@@ -26,12 +26,13 @@
  * naturalnymi z zakresu 1-25.
  */
 std::vector<std::vector<int>> makeArray(int rows, int columns) {
+	srand(time(NULL));
 	
 	/* Użycie vectorów jest podyktowane koniecznością dynamicznego przypisania
 	 * wielkości tabeli przez użytkownika w trakcie działania programu 
 	 */
-	std::vector<std::vector<int>> numberMatrix; // Ten vector zwraca funkcja
-	srand(time(NULL));
+	std::vector<std::vector<int>> numberMatrix;
+	
 
 	for (int row = 0; row < rows; row++) {
 		
@@ -67,9 +68,9 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 
 	/* Vector distance (w graficznym przedstawieniu tabela liczb) zawiera odległości
 	 * dojścia do wszystkich kroków pośrednich. Jest zbudowany analogicznie, do
-	 * tabeli wejściowej numbers, jednak każda komórka zawiera dodatkowo zestaw
-	 * odległości, przez które funkcja przeszła do tej pory, szukając 
-	 * najkrótszej ścieżki. 
+	 * tabeli wejściowej numbers, jednak każda komórka będzie zawierała 
+	 * dodatkowo zestaw odległości, przez które funkcja przeszła do tej pory,
+	 * szukając najkrótszej ścieżki. 
 	 */
 	std::vector<std::vector<std::vector<int>>> distance;
 
@@ -80,11 +81,11 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 	 */
 	for (int row = 0; row < numbers.size(); row++) {
 		
-		std::vector<std::vector<int>> rowVector; // Wiersz tabeli distance
+		std::vector<std::vector<int>> rowVector;
 
 		for (int column = 0; column < numbers[row].size(); column++) {
 
-			std::vector<int> cellVector; // Komórka tabeli distance
+			std::vector<int> cellVector;
 
 			if (column == 0) cellVector.push_back(numbers[row][column]);
 			rowVector.push_back(cellVector);
@@ -96,7 +97,7 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 	int indexC{ 1 }; // Delta indeksu komórki "na ukos w dół"
 
 	/* Pętla sprawdza i zapełnia po kolei kolumny tabeli distance, pomijając 
-	 * pierwszą kolumnę, która została już zapłeniona.
+	 * pierwszą kolumnę, która została już zapełniona.
 	 */
 	for (int column = 1; column < distance[0].size(); column++) {
 		for (int row = 0; row < distance.size(); row++) {
@@ -105,9 +106,8 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 			if (row == 0) {  
 				indexA = 0 ;
 			}
-
 			// jeżeli wiersz jest ostatni, to nie sprawdzamy wiersza po nim
-			else if (row == distance.size() - 1) {  
+			if (row == distance.size() - 1) {  
 				indexC = 0;
 			}
 
@@ -126,8 +126,6 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 			int c{ std::accumulate(distance[row + indexC][column - 1].begin(),
 								   distance[row + indexC][column - 1].end(), 0) 
 			};
-
-			// Zmienna na najmniejszą sumę odległości do komórki
 			int smallest{ std::min(a, std::min(b, c)) };
 
 			// Szukamy najmniejszej z policzonych sum i wskazujemy jej indeks.
@@ -156,7 +154,7 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 	/* Zmienna na najkrótszą odkrytą drogę rozwiązania. Zainicjalizowana na
 	 * najwyższą możliwą wartość.
 	 */
-	unsigned long long low_sum{ 25 * distance[0].size() };
+	unsigned long long lowest_sum{ 25 * distance[0].size() };
 
 	std::vector<int> func_result;
 
@@ -167,8 +165,8 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 		int vectorSum{ std::accumulate(distance[i][distance[i].size() - 1].begin(),
 									   distance[i][distance[i].size() - 1].end(), 0)
 		};
-		if (vectorSum < low_sum) {
-			low_sum = vectorSum;
+		if (vectorSum < lowest_sum) {
+			lowest_sum = vectorSum;
 			func_result = distance[i][distance[i].size() - 1];
 		}
 	}
@@ -179,13 +177,13 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 void interface() {
 	int rows;
 	int columns;
-	std::cout << "Podaj liczbe rzedow: ";
+	std::cout << "Podaj liczbe wierszy: ";
 	std::cin >> rows;
 	std::cout << "Podaj liczbe kolumn: ";
 	std::cin >> columns;
-	std::vector<std::vector<int>> numbers = makeArray(rows, columns);
+	std::vector<std::vector<int>> numbers{ makeArray(rows, columns) };
 	drawArray(numbers);
-	std::vector<int> result = shortestPath(numbers);
+	std::vector<int> result{ shortestPath(numbers) };
 	
 	// Wyświetlamy wynik
 	for (int number : result) {
