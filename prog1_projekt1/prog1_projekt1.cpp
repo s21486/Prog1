@@ -22,49 +22,41 @@
 #include <numeric>
 #include <algorithm>
 
-/* Funkcja tworząca i zwracająca dwuwymiarową tabelę, którą zapełniła liczbami
- * naturalnymi z zakresu 1-25.
+/* Funkcja zwracająca wskaźnik do dwuwymiarowej tablicy, którą zapełniła 
+ * losowymi liczbami naturalnymi z zakresu 1-25.
  */
-std::vector<std::vector<int>> makeArray(int rows, int columns) {
+int** make_array(int rows, int columns) {
 	srand(time(NULL));
-	
-	/* Użycie vectorów jest podyktowane koniecznością dynamicznego przypisania
-	 * wielkości tabeli przez użytkownika w trakcie działania programu 
-	 */
-	std::vector<std::vector<int>> numberMatrix;
-	
 
-	for (int row = 0; row < rows; row++) {
-		
-		// vector będący wierszem tabeli w jej graficznym przedstawieniu
-		std::vector<int> rowVector; 
-		
+	// Wskaźnik do dwuwymiarowej tablicy o dynamicznie alokowanej wielkości
+	int** number_matrix{ new int* [rows] };
+	for (int i = 0; i < rows; i++) number_matrix[i] = new int[columns];
+	
+	// Pętle wypełniają tablicę losowymi liczbami
+	for (int row = 0; row < rows; row++){
 		for (int column = 0; column < columns; column++) {
-			rowVector.push_back(rand() % 25 + 1);
+			number_matrix[row][column] = rand() % 25 + 1;
 		}
-		numberMatrix.push_back(rowVector);
 	}
-
-	return numberMatrix;
+	return number_matrix;
 }
 
 // Funkcja wypisująca na ekran graficzne przedstawienie zawartości tabeli.
-void drawArray(std::vector<std::vector<int>> numbers) {
+void draw_array(int** numbers, int rows, int columns) {
 	std::cout << "TABELA: \n";
-	for (std::vector<int> row : numbers) {
-		for (int number : row) {
-			std::cout << number << '\t';
+	for (int row = 0; row < rows; row++) {
+		for (int column = 0; column < columns; column++) {
+			std::cout << numbers[row][column] << '\t';
 		}
 		std::cout << '\n';
 	}
-
 	std::cout << '\n';
 }
 
 /* Funkcja obliczajaca najkrótszą drogę od pierwszej do ostatniej kolumny dla
- * danej tabeli.
+ * danej tablicy.
  */
-std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
+std::vector<int> find_shortest_path(int** numbers, int rows, int columns) {
 
 	/* Vector distance (w graficznym przedstawieniu tabela liczb) zawiera odległości
 	 * dojścia do wszystkich kroków pośrednich. Jest zbudowany analogicznie, do
@@ -79,18 +71,18 @@ std::vector<int> shortestPath(std::vector<std::vector<int>> numbers) {
 	 * co pierwsza kolumna tabeli wejściowej numbers. Pozostałe kolumny są
 	 * zapełniane pustymi vectorami liczb.
 	 */
-	for (int row = 0; row < numbers.size(); row++) {
+	for (int row = 0; row < rows; row++) {
 		
-		std::vector<std::vector<int>> rowVector;
+		std::vector<std::vector<int>> row_vector;
 
-		for (int column = 0; column < numbers[row].size(); column++) {
+		for (int column = 0; column < columns; column++) {
 
-			std::vector<int> cellVector;
+			std::vector<int> cell_vector;
 
-			if (column == 0) cellVector.push_back(numbers[row][column]);
-			rowVector.push_back(cellVector);
+			if (column == 0) cell_vector.push_back(numbers[row][column]);
+			row_vector.push_back(cell_vector);
 		}
-		distance.push_back(rowVector);
+		distance.push_back(row_vector);
 	}
 	int indexA{ -1 }; // Delta indeksu komórki "na ukos w górę"	
 	int indexB{ 0 }; // Delta indeksu komórki "obok"
@@ -181,9 +173,9 @@ void interface() {
 	std::cin >> rows;
 	std::cout << "Podaj liczbe kolumn: ";
 	std::cin >> columns;
-	std::vector<std::vector<int>> numbers{ makeArray(rows, columns) };
-	drawArray(numbers);
-	std::vector<int> result{ shortestPath(numbers) };
+	int** numbers{ make_array(rows, columns) };
+	draw_array(numbers, rows, columns);
+	std::vector<int> result{ find_shortest_path(numbers, rows, columns) };
 	
 	// Wyświetlamy wynik
 	for (int number : result) {
