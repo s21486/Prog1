@@ -1,17 +1,16 @@
 ﻿//autor: Błażej Bałęczny @PJATK 2019
 
-/* Program tworzy dwuwymiarową tablicę, stanowiącą tabelę o ilości wierszy
- * i kolumn podanych przez użytkownika, następnie wypełnia ją losowymi liczbami 
- * naturalnymi z zakresu 1-25. Po wygenerowaniu tabeli, liczy najkrótszą ścieżkę
- * pomiędzy dowolną komórką pierwszej kolumny, a dowolną komórką ostatniej 
- * kolumny, gdzie symboliczna odległość pomiędzy komórkami jest wyznaczona przez
- * liczbę w komórce docelowej. Przejście jest możliwe wyłącznie pomiędzy
- * sąsiadującymi komórkami. Za sąsiadujące komórki uznaje się takie, które leżą 
- * w sąsiadujących kolumnach w tym samym wierszu ("obok") lub w wierszu 
- * o indeksie o jeden większym i mniejszym ("na ukos"). Punktem początkowym jest
- * abstrakcyjny punkt o wartości 0, który leży na lewo od pierwszej kolumny
- * i sąsiaduje ze wszystkimi komórkami tejże. Po wyliczeniu wartości najkrótszej
- * trasy, program wyświetla odległości poszczególnych kroków oraz ich sumę.
+/* Program znajduje najkrótszą ścieżkę, poruszając się po tabeli losowych liczb
+ * naturalnych z zakresu 1-25 o wymiarach podanych przez użytkownika. Ścieżka 
+ * szukana jest od pierwszej do ostatniej kolumny. Odległość pomiędzy komórkami 
+ * jest równa liczbie znajdującej się w komórce docelowej. Przejście jest 
+ * możliwe wyłącznie pomiędzy sąsiadującymi komórkami. Za sąsiadujące komórki 
+ * uznaje się takie, które leżą w sąsiadujących kolumnach w tym samym wierszu 
+ * ("obok") lub w wierszu o indeksie o jeden większym i mniejszym ("na ukos").
+ * Punktem początkowym jest abstrakcyjny punkt o wartości 0, który leży na lewo
+ * od pierwszej kolumny i sąsiaduje ze wszystkimi komórkami tejże. Po wyliczeniu
+ * wartości najkrótszej trasy, program wyświetla odległości poszczególnych 
+ * kroków oraz ich sumę.
  */
                                                                                 
 
@@ -85,45 +84,41 @@ std::vector<int> findPath(int** numbers, int rows, int columns) {
     // Pętla sprawdza i zapełnia po kolei puste kolumny tabeli distance.
     for (int column = 1; column < distance[0].size(); column++) {
         for (int row = 0; row < distance.size(); row++) {
-            // jeżeli wiersz jest pierwszy, to nie sprawdzamy wiersza przed nim
+            // jeżeli wiersz jest pierwszy, to nie sprawdza wiersza przed nim
             if (row == 0) {  
                 indexA = 0 ;
             }
-            // jeżeli wiersz jest ostatni, to nie sprawdzamy wiersza po nim
+            // jeżeli wiersz jest ostatni, to nie sprawdza wiersza po nim
             if (row == distance.size() - 1) {  
                 indexC = 0;
             }
-
-            /* Liczymy sumy odległości od komórek sąsiadujących z komórką
-             * docelową z lewej strony.
-             */
-            int a{ // Suma odległości z komórki z góry
+            int a{ // Suma odległości z komórki "na ukos w górę"
                 std::accumulate(distance[row + indexA][column - 1].begin(),
                                 distance[row + indexA][column - 1].end(), 0) 
             }; 
-            int b{ // Suma odległości z komórki obok
+            int b{ // Suma odległości z komórki "obok"
                 std::accumulate(distance[row + indexB][column - 1].begin(),
                                 distance[row + indexB][column - 1].end(), 0) 
             }; 
-            int c{ // Suma odległości z komórki z dołu
+            int c{ // Suma odległości z komórki "na ukos z dołu"
                 std::accumulate(distance[row + indexC][column - 1].begin(),
                                 distance[row + indexC][column - 1].end(), 0) 
             }; 
             int smallest{ std::min(a, std::min(b, c)) };
 
-            // Szukamy najmniejszej z policzonych sum i wskazujemy jej indeks.
+            // Instrukcja szuka najmniejszej sumy i wskazuje jej indeks.
             int index;
             if (smallest == a) { index = indexA; }
             else if (smallest == b) { index = indexB; }
             else { index = indexC; }
 
-            // Uzupełnamy komórkę najkrótszą drogą do niej prowadzącą
+            // Pętla uzupełnia komórkę najkrótszą drogą do niej prowadzącą.
             for (int number : distance[row + index][column - 1]) {
                 distance[row][column].push_back(number);
             }
             distance[row][column].push_back(numbers[row][column]);
 
-            // Przywracamy wszystkie delty do domyślnych wartości
+            // Przywrócenie delty do domyślnych wartości.
             indexA = -1;
             indexC = 1;
         }
@@ -134,8 +129,8 @@ std::vector<int> findPath(int** numbers, int rows, int columns) {
     unsigned long long lowestSum{ 25 * distance[0].size() };
 
     std::vector<int> result;
-    /* Pętla sprawdza po kolei komórki ostatniej kolumny i szuka takiej o
-     * najniższej sumie wartości.
+    /* Pętla sprawdza po kolei komórki ostatniej kolumny vectora distance
+     * i szuka takiej o najniższej sumie wartości.
      */
     for (int i = 0; i < distance.size(); i++) {
         int vectorSum {
@@ -162,7 +157,7 @@ void interface() {
     printArray(numbers, rows, columns);
     std::vector<int> result{ findPath(numbers, rows, columns) };
 	
-    // Wyświetlamy wynik
+    // Wyświetlenie wyniku
     for (int number : result) {
         std::cout << number << ' ';
     }
