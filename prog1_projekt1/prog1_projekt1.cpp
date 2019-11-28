@@ -44,7 +44,8 @@ void printArray(int** numbers, int rows, int columns) {
     std::cout << "TABELA: \n";
     for (int row = 0; row < rows; row++) {
         for (int column = 0; column < columns; column++) {
-            std::cout << numbers[row][column] << '\t';
+            std::cout << numbers[row][column] << ' ';
+            if (numbers[row][column] / 10 == 0) std::cout << ' ';
         }
         std::cout << '\n';
     }
