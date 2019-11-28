@@ -41,7 +41,7 @@ int** makeArray(int rows, int columns) {
 }
 
 // Funkcja wypisująca na ekran graficzne przedstawienie zawartości tabeli.
-void drawArray(int** numbers, int rows, int columns) {
+void printArray(int** numbers, int rows, int columns) {
 	std::cout << "TABELA: \n";
 	for (int row = 0; row < rows; row++) {
 		for (int column = 0; column < columns; column++) {
@@ -161,7 +161,7 @@ void interface() {
 	std::cout << "Podaj liczbe kolumn: ";
 	std::cin >> columns;
 	int** numbers{ makeArray(rows, columns) };
-	drawArray(numbers, rows, columns);
+	printArray(numbers, rows, columns);
 	std::vector<int> result{ findPath(numbers, rows, columns) };
 	
 	// Wyświetlamy wynik
